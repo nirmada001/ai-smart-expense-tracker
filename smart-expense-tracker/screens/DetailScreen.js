@@ -13,7 +13,7 @@ import { Picker } from '@react-native-picker/picker';
 import { collection, addDoc } from 'firebase/firestore';
 import { db } from '../firebaseConfig';
 
-export default function DetailsScreen({ route, navigation}) {
+export default function DetailsScreen({ route, navigation }) {
   const { result } = route.params;
 
   const [shop, setShop] = useState(result.shop || '');
@@ -37,7 +37,7 @@ export default function DetailsScreen({ route, navigation}) {
       Alert.alert('✅ Saved', 'Receipt details have been saved successfully.', [
         {
           text: 'OK',
-          onPress: () => navigation.navigate('Home'), // 👈 Go back to Home
+          onPress: () => navigation.navigate('Home'),
         },
       ]);
     } catch (error) {
@@ -46,13 +46,11 @@ export default function DetailsScreen({ route, navigation}) {
     }
   };
 
-
-
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.heading}>🧾 Receipt Details</Text>
 
-      {/* Editable: Shop */}
+      {/* Shop */}
       <View style={styles.card}>
         <Text style={styles.label}>Shop</Text>
         <TextInput
@@ -60,10 +58,11 @@ export default function DetailsScreen({ route, navigation}) {
           value={shop}
           onChangeText={setShop}
           placeholder="Enter shop name"
+          placeholderTextColor="#999"
         />
       </View>
 
-      {/* Editable: Date */}
+      {/* Date */}
       <View style={styles.card}>
         <Text style={styles.label}>Date</Text>
         <TextInput
@@ -71,10 +70,11 @@ export default function DetailsScreen({ route, navigation}) {
           value={date}
           onChangeText={setDate}
           placeholder="Enter date"
+          placeholderTextColor="#999"
         />
       </View>
 
-      {/* Editable: Title */}
+      {/* Title */}
       <View style={styles.card}>
         <Text style={styles.label}>Title</Text>
         <TextInput
@@ -82,10 +82,11 @@ export default function DetailsScreen({ route, navigation}) {
           value={title}
           onChangeText={setTitle}
           placeholder="Enter title"
+          placeholderTextColor="#999"
         />
       </View>
 
-      {/* Not Editable: Category Picker */}
+      {/* Category */}
       <View style={styles.card}>
         <Text style={styles.label}>Select Category</Text>
         {result.categories?.length ? (
@@ -95,7 +96,7 @@ export default function DetailsScreen({ route, navigation}) {
               onValueChange={setSelectedCategory}
               style={styles.picker}
               mode="dropdown"
-              dropdownIconColor="#555"
+              dropdownIconColor="#4A90E2"
             >
               {result.categories.map((cat, index) => (
                 <Picker.Item key={index} label={cat} value={cat} />
@@ -107,7 +108,7 @@ export default function DetailsScreen({ route, navigation}) {
         )}
       </View>
 
-      {/* Editable: Total */}
+      {/* Total */}
       <View style={styles.card}>
         <Text style={styles.label}>Total</Text>
         <TextInput
@@ -115,6 +116,7 @@ export default function DetailsScreen({ route, navigation}) {
           value={total}
           onChangeText={setTotal}
           placeholder="Enter total amount"
+          placeholderTextColor="#999"
           keyboardType="numeric"
         />
       </View>
@@ -130,48 +132,48 @@ export default function DetailsScreen({ route, navigation}) {
 const styles = StyleSheet.create({
   container: {
     padding: 24,
-    backgroundColor: '#f5f7fa',
+    backgroundColor: '#F9FAFB',
     flexGrow: 1,
     alignItems: 'center',
     marginTop: 30,
   },
   heading: {
     fontSize: 26,
-    fontWeight: 'bold',
+    fontWeight: '700',
     marginBottom: 30,
-    color: '#222',
+    color: '#212121',
     textAlign: 'center',
   },
   card: {
-    backgroundColor: '#fff',
+    backgroundColor: '#FFFFFF',
     paddingVertical: 18,
     paddingHorizontal: 20,
     borderRadius: 12,
     marginBottom: 18,
     width: '100%',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.06,
-    shadowRadius: 6,
-    elevation: 3,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 5,
+    elevation: 2,
   },
   label: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#666',
+    color: '#757575',
     marginBottom: 6,
     textTransform: 'uppercase',
   },
   input: {
-    fontSize: 17,
-    color: '#111',
-    backgroundColor: '#f0f0f0',
+    fontSize: 16,
+    color: '#212121',
+    backgroundColor: '#F0F4F8',
     paddingVertical: 10,
     paddingHorizontal: 12,
     borderRadius: 8,
   },
   pickerWrapper: {
-    backgroundColor: '#f0f0f0',
+    backgroundColor: '#F0F4F8',
     borderRadius: 8,
     overflow: 'hidden',
     ...Platform.select({
@@ -184,24 +186,24 @@ const styles = StyleSheet.create({
   picker: {
     height: Platform.OS === 'android' ? 48 : undefined,
     width: '100%',
-    color: '#333',
+    color: '#212121',
   },
   saveButton: {
     marginTop: 20,
-    backgroundColor: '#FF9800',
+    backgroundColor: '#4A90E2',
     paddingVertical: 16,
     paddingHorizontal: 30,
     borderRadius: 12,
     width: '100%',
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOpacity: 0.1,
+    shadowColor: '#4A90E2',
+    shadowOpacity: 0.2,
     shadowOffset: { width: 0, height: 3 },
     elevation: 4,
   },
   saveText: {
-    color: '#fff',
+    color: '#FFFFFF',
     fontSize: 17,
-    fontWeight: '600',
+    fontWeight: '700',
   },
 });
