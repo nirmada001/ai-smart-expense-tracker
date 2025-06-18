@@ -14,7 +14,7 @@ export default function LoginScreen({ navigation }) {
     try {
       await signInWithEmailAndPassword(auth, email, password);
       Alert.alert(
-        'Login Successful',
+        '✅ Login Successful',
         'Welcome back!',
         [
           {

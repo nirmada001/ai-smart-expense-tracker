@@ -12,6 +12,8 @@ import {
 import { Picker } from '@react-native-picker/picker';
 import { collection, addDoc } from 'firebase/firestore';
 import { db } from '../firebaseConfig';
+import { auth } from '../firebaseConfig';
+import { getAuth } from 'firebase/auth';
 
 export default function DetailsScreen({ route, navigation }) {
   const { result } = route.params;
@@ -23,6 +25,13 @@ export default function DetailsScreen({ route, navigation }) {
   const [selectedCategory, setSelectedCategory] = useState(result.categories?.[0] || '');
 
   const handleSave = async () => {
+    const currentUser = auth.currentUser;
+
+    if (!currentUser) {
+      Alert.alert('User not logged in', 'Please log in to save receipts.');
+      return;
+    }
+
     const dataToSave = {
       shop,
       date,
@@ -33,7 +42,10 @@ export default function DetailsScreen({ route, navigation }) {
     };
 
     try {
-      await addDoc(collection(db, 'receipts'), dataToSave);
+      await addDoc(
+        collection(db, 'users', currentUser.uid, 'receipts'), // 👈 this saves under the user
+        dataToSave
+      );
       Alert.alert('✅ Saved', 'Receipt details have been saved successfully.', [
         {
           text: 'OK',
@@ -45,6 +57,7 @@ export default function DetailsScreen({ route, navigation }) {
       Alert.alert('❌ Error', 'Failed to save receipt.');
     }
   };
+
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
