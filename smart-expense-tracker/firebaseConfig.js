@@ -1,5 +1,12 @@
+// firebaseConfig.js
 import { initializeApp } from 'firebase/app';
 import { getFirestore } from 'firebase/firestore';
+import {
+  getAuth,
+  initializeAuth,
+  getReactNativePersistence,
+} from 'firebase/auth';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   FIREBASE_API_KEY,
   FIREBASE_AUTH_DOMAIN,
@@ -19,6 +26,18 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
+
+// 🛡 Prevent "auth has not been registered" issue
+let auth;
+try {
+  auth = initializeAuth(app, {
+    persistence: getReactNativePersistence(AsyncStorage),
+  });
+} catch (e) {
+  // If already initialized (in hot reload), fallback to getAuth
+  auth = getAuth(app);
+}
+
 const db = getFirestore(app);
 
-export { db };
+export { app, auth, db };
