@@ -10,13 +10,18 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
+import LoadingOverlay from '../components/LoadingOverlay';
+
 
 export default function UploadScreen({ navigation }) {
   const [image, setImage] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
   const API_URL = 'http://192.168.8.116:5000/api/extract';
 
   const uploadImageForExtraction = async () => {
     if (!image) return;
+
+    setIsLoading(true);
 
     const formData = new FormData();
     formData.append('image', {
@@ -35,9 +40,11 @@ export default function UploadScreen({ navigation }) {
       });
 
       const data = await response.json();
+      setIsLoading(false);
       navigation.navigate('Details', { result: data });
     } catch (error) {
       console.error('Error uploading image:', error);
+      setIsLoading(false);
       Alert.alert('Upload failed', 'Could not process receipt.');
     }
   };
@@ -78,33 +85,38 @@ export default function UploadScreen({ navigation }) {
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.title}>📄 Smart Expense Tracker</Text>
+    <>
+      <LoadingOverlay visible={isLoading} message="Extracting receipt details..." />
 
-      <View style={styles.buttonGroup}>
-        <TouchableOpacity style={styles.buttonPrimary} onPress={takePhotoWithCamera}>
-          <Text style={styles.buttonText}>📸 Take a Photo</Text>
-        </TouchableOpacity>
+      <ScrollView contentContainerStyle={styles.container}>
+        <Text style={styles.title}>📄 Smart Expense Tracker</Text>
 
-        <TouchableOpacity style={styles.buttonSecondary} onPress={pickImageFromGallery}>
-          <Text style={styles.buttonText}>🖼️ Choose from Gallery</Text>
-        </TouchableOpacity>
-      </View>
+        <View style={styles.buttonGroup}>
+          <TouchableOpacity style={styles.buttonPrimary} onPress={takePhotoWithCamera}>
+            <Text style={styles.buttonText}>📸 Take a Photo</Text>
+          </TouchableOpacity>
 
-      {image && (
-        <View style={styles.previewCard}>
-          <Text style={styles.previewLabel}>Selected Image</Text>
-          <Image source={{ uri: image }} style={styles.imagePreview} />
+          <TouchableOpacity style={styles.buttonSecondary} onPress={pickImageFromGallery}>
+            <Text style={styles.buttonText}>🖼️ Choose from Gallery</Text>
+          </TouchableOpacity>
         </View>
-      )}
 
-      {image && (
-        <TouchableOpacity style={styles.extractButton} onPress={uploadImageForExtraction}>
-          <Text style={styles.extractText}>🚀 Extract Info</Text>
-        </TouchableOpacity>
-      )}
-    </ScrollView>
+        {image && (
+          <View style={styles.previewCard}>
+            <Text style={styles.previewLabel}>Selected Image</Text>
+            <Image source={{ uri: image }} style={styles.imagePreview} />
+          </View>
+        )}
+
+        {image && (
+          <TouchableOpacity style={styles.extractButton} onPress={uploadImageForExtraction}>
+            <Text style={styles.extractText}>🚀 Extract Info</Text>
+          </TouchableOpacity>
+        )}
+      </ScrollView>
+    </>
   );
+
 }
 
 const styles = StyleSheet.create({
