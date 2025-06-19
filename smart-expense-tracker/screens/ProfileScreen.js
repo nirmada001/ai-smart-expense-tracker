@@ -1,21 +1,31 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, StyleSheet, ScrollView, Text } from 'react-native';
+// import ExpenseSummary from '../components/ExpenseSummary';
+import CategorySummary from '../components/CategorySummary';
 
 export default function ProfileScreen() {
+  
+
   return (
-    <View style={styles.container}>
-      <Text style={styles.text}>👤 User Profile / Settings</Text>
-    </View>
+    <ScrollView contentContainerStyle={styles.container}>
+      <Text style={styles.heading}>👤 My Profile</Text>
+      
+      <CategorySummary />
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    justifyContent: 'center',
+    padding: 24,
+    backgroundColor: '#FAFAFA',
+    flexGrow: 1,
     alignItems: 'center',
   },
-  text: {
-    fontSize: 20,
+  heading: {
+    fontSize: 26,
+    fontWeight: 'bold',
+    marginVertical: 20,
+    color: '#212121',
   },
 });
