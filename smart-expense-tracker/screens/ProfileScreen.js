@@ -1,21 +1,13 @@
 import React from 'react';
-import { View, Text, StyleSheet, FlatList } from 'react-native';
-import ReceiptHistory from '../components/ReceiptHistory';
+import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import CategoryRingSummary from '../components/CategoryRingSummary';
 
 export default function ProfileScreen() {
-  const dummyData = [{}]; // single dummy item just to use FlatList
-
   return (
-    <FlatList
-      data={dummyData}
-      keyExtractor={(_, index) => index.toString()}
-      renderItem={() => (
-        <View style={styles.container}>
-          <Text style={styles.heading}>👤 My Profile</Text>
-          <ReceiptHistory />
-        </View>
-      )}
-    />
+    <ScrollView contentContainerStyle={styles.container}>
+      <Text style={styles.heading}>👤 My Profile</Text>
+      <CategoryRingSummary />
+    </ScrollView>
   );
 }
 
@@ -24,7 +16,7 @@ const styles = StyleSheet.create({
     padding: 24,
     backgroundColor: '#FAFAFA',
     alignItems: 'center',
-    flex: 1,
+    flexGrow: 1,
   },
   heading: {
     fontSize: 26,
