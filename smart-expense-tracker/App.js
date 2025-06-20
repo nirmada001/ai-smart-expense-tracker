@@ -6,7 +6,8 @@ import { Ionicons } from '@expo/vector-icons';
 import HomeScreen from './screens/HomeScreen';
 import UploadScreen from './screens/UploadScreen';
 import ProfileScreen from './screens/ProfileScreen'; // You can replace this with Login/Register if needed
-
+import LoginScreen from './screens/LoginScreen'; 
+import RegisterScreen from './screens/RegisterScreen'; 
 const Tab = createBottomTabNavigator();
 
 export default function App() {
@@ -31,6 +32,8 @@ export default function App() {
         <Tab.Screen name="Home" component={HomeScreen} />
         <Tab.Screen name="Upload" component={UploadScreen} />
         <Tab.Screen name="Profile" component={ProfileScreen} />
+        <Tab.Screen name="Login" component={LoginScreen} />
+        <Tab.Screen name="Register" component={RegisterScreen} />
       </Tab.Navigator>
     </NavigationContainer>
   );

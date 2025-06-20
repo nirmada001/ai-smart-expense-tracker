@@ -1,5 +1,5 @@
 // firebaseConfig.js
-import { initializeApp } from 'firebase/app';
+import { initializeApp, getApps } from 'firebase/app';
 import { getFirestore } from 'firebase/firestore';
 import {
   getAuth,
@@ -25,16 +25,16 @@ const firebaseConfig = {
   appId: FIREBASE_APP_ID,
 };
 
-const app = initializeApp(firebaseConfig);
+// Prevent reinitializing app on hot reload
+const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
 
-// 🛡 Prevent "auth has not been registered" issue
 let auth;
 try {
   auth = initializeAuth(app, {
     persistence: getReactNativePersistence(AsyncStorage),
   });
 } catch (e) {
-  // If already initialized (in hot reload), fallback to getAuth
+  // Already initialized, use default
   auth = getAuth(app);
 }
 

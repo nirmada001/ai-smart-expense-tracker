@@ -1,9 +1,17 @@
 // CategoryPieChart.js
 import React, { useEffect, useState } from 'react';
-import { View, Text, Dimensions, StyleSheet, ActivityIndicator, TouchableOpacity } from 'react-native';
+import {
+  View,
+  Text,
+  Dimensions,
+  StyleSheet,
+  ActivityIndicator,
+  TouchableOpacity,
+} from 'react-native';
 import { PieChart } from 'react-native-chart-kit';
 import { collection, getDocs } from 'firebase/firestore';
 import { auth, db } from '../firebaseConfig';
+import ReceiptHistory from './ReceiptHistory';
 
 const screenWidth = Dimensions.get('window').width;
 
@@ -12,17 +20,15 @@ const COLORS = [
   '#F44336', '#FFC107', '#00BCD4', '#795548',
 ];
 
-export default function CategoryPieChart({ onPress }) {
+export default function CategoryPieChart() {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showHistory, setShowHistory] = useState(false);
 
   useEffect(() => {
     const fetch = async () => {
       const user = auth.currentUser;
-      if (!user) {
-        setLoading(false);
-        return;
-      }
+      if (!user) return;
 
       try {
         const snapshot = await getDocs(collection(db, 'users', user.uid, 'receipts'));
@@ -61,22 +67,34 @@ export default function CategoryPieChart({ onPress }) {
   if (!data.length) return <Text style={styles.noData}>No data to show</Text>;
 
   return (
-    <TouchableOpacity activeOpacity={0.8} onPress={onPress} style={styles.container}>
+    <View style={styles.container}>
       <Text style={styles.title}>📊 Spending by Category</Text>
-      <PieChart
-        data={data}
-        width={screenWidth * 0.95}
-        height={220}
-        chartConfig={{
-          color: () => `#000`,
-        }}
-        accessor="amount"
-        backgroundColor="transparent"
-        paddingLeft="15"
-        center={[5, 0]}
-        absolute
-      />
-    </TouchableOpacity>
+
+      <TouchableOpacity onPress={() => setShowHistory(prev => !prev)}>
+        <PieChart
+          data={data}
+          width={screenWidth * 0.95}
+          height={220}
+          chartConfig={{
+            color: () => `#000`,
+          }}
+          accessor="amount"
+          backgroundColor="transparent"
+          paddingLeft="15"
+          center={[5, 0]}
+          absolute
+        />
+        <Text style={styles.toggleHint}>
+          {showHistory ? '🔽 Hide Receipt History' : '📑 Tap to View Receipts'}
+        </Text>
+      </TouchableOpacity>
+
+      {showHistory && (
+        <View style={styles.historySection}>
+          <ReceiptHistory />
+        </View>
+      )}
+    </View>
   );
 }
 
@@ -88,6 +106,8 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     alignItems: 'center',
     elevation: 3,
+    width: '95%',
+    alignSelf: 'center',
   },
   title: {
     fontSize: 18,
@@ -97,5 +117,15 @@ const styles = StyleSheet.create({
   noData: {
     color: '#888',
     marginTop: 30,
+  },
+  toggleHint: {
+    textAlign: 'center',
+    marginTop: 12,
+    fontSize: 13,
+    color: '#666',
+  },
+  historySection: {
+    marginTop: 20,
+    width: '100%',
   },
 });
