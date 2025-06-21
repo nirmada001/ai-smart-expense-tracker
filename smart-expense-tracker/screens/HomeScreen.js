@@ -13,6 +13,13 @@ export default function HomeScreen({ navigation }) {
       >
         <Text style={styles.buttonText}>📄 Upload a Bill</Text>
       </TouchableOpacity>
+
+      <TouchableOpacity
+        style={styles.button}
+        onPress={() => navigation.navigate('Profile')}
+      >
+        <Text style={styles.buttonText}>📄 Profile</Text>
+      </TouchableOpacity>
     </View>
   );
 }
