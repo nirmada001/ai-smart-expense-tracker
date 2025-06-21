@@ -1,4 +1,3 @@
-// CategoryPieChart.js
 import React, { useEffect, useState } from 'react';
 import {
   View,
@@ -24,9 +23,10 @@ export default function CategoryPieChart() {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showHistory, setShowHistory] = useState(false);
+  const [totalSpent, setTotalSpent] = useState(0);
 
   useEffect(() => {
-    const fetch = async () => {
+    const fetchData = async () => {
       const user = auth.currentUser;
       if (!user) return;
 
@@ -37,7 +37,14 @@ export default function CategoryPieChart() {
 
         snapshot.forEach(doc => {
           const { category, total: amount } = doc.data();
-          const value = parseFloat(amount);
+
+          // ✅ Sanitize: remove commas and parse
+          const cleanedAmount = typeof amount === 'string'
+            ? amount.replace(/,/g, '')
+            : amount;
+
+          const value = parseFloat(cleanedAmount);
+
           if (!isNaN(value) && category) {
             totals[category] = (totals[category] || 0) + value;
             total += value;
@@ -46,13 +53,14 @@ export default function CategoryPieChart() {
 
         const result = Object.keys(totals).map((cat, idx) => ({
           name: cat,
-          amount: totals[cat],
+          amount: Number(totals[cat]),
           color: COLORS[idx % COLORS.length],
           legendFontColor: '#000',
           legendFontSize: 13,
         }));
 
         setData(result);
+        setTotalSpent(total);
       } catch (e) {
         console.error('Error loading pie chart data', e);
       } finally {
@@ -60,8 +68,9 @@ export default function CategoryPieChart() {
       }
     };
 
-    fetch();
+    fetchData();
   }, []);
+
 
   if (loading) return <ActivityIndicator size="large" color="#4A90E2" />;
   if (!data.length) return <Text style={styles.noData}>No data to show</Text>;
@@ -70,20 +79,24 @@ export default function CategoryPieChart() {
     <View style={styles.container}>
       <Text style={styles.title}>📊 Spending by Category</Text>
 
+      <PieChart
+        data={data}
+        width={screenWidth * 0.95}
+        height={220}
+        chartConfig={{
+          color: () => `#000`,
+          decimalPlaces: 0, // Prevent values like 4.5k
+        }}
+        accessor="amount"
+        backgroundColor="transparent"
+        paddingLeft="15"
+        center={[5, 0]}
+        absolute
+      />
+
+      <Text style={styles.totalText}>Total Spent: LKR {totalSpent.toFixed(2)}</Text>
+
       <TouchableOpacity onPress={() => setShowHistory(prev => !prev)}>
-        <PieChart
-          data={data}
-          width={screenWidth * 0.95}
-          height={220}
-          chartConfig={{
-            color: () => `#000`,
-          }}
-          accessor="amount"
-          backgroundColor="transparent"
-          paddingLeft="15"
-          center={[5, 0]}
-          absolute
-        />
         <Text style={styles.toggleHint}>
           {showHistory ? '🔽 Hide Receipt History' : '📑 Tap to View Receipts'}
         </Text>
@@ -123,6 +136,12 @@ const styles = StyleSheet.create({
     marginTop: 12,
     fontSize: 13,
     color: '#666',
+  },
+  totalText: {
+    marginTop: 8,
+    fontSize: 15,
+    fontWeight: '500',
+    color: '#333',
   },
   historySection: {
     marginTop: 20,

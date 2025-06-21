@@ -3,7 +3,8 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'rea
 import { signOut } from 'firebase/auth';
 import { auth } from '../firebaseConfig';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import CategoryRingSummary from '../components/CategoryRingSummary';
+// import CategoryRingSummary from '../components/CategoryRingSummary';
+import DonutChartWithGradient from '../components/DonutChartWithGradient';
 
 export default function ProfileScreen({ navigation }) {
   const handleLogout = () => {
@@ -31,7 +32,7 @@ export default function ProfileScreen({ navigation }) {
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.heading}>👤 My Profile</Text>
-      <CategoryRingSummary />
+      <DonutChartWithGradient />
 
       <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
         <Text style={styles.logoutText}>Logout</Text>
