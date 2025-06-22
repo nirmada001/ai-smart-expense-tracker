@@ -137,6 +137,8 @@ const styles = StyleSheet.create({
   buttonGroup: {
     width: '100%',
     marginBottom: 25,
+    marginTop: 20,
+    
   },
   buttonPrimary: {
     backgroundColor: '#4A90E2', // primary blue

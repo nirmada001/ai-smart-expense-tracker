@@ -1,12 +1,15 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import { signOut } from 'firebase/auth';
 import { auth } from '../firebaseConfig';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-// import CategoryRingSummary from '../components/CategoryRingSummary';
+import ReceiptHistory from '../components/ReceiptHistory';
 import DonutChartWithGradient from '../components/DonutChartWithGradient';
+import MonthlyBarChart from '../components/MonthlyBarChart';
 
 export default function ProfileScreen({ navigation }) {
+  const [showHistory, setShowHistory] = useState(false);
+
   const handleLogout = () => {
     Alert.alert(
       'Logout Confirmation',
@@ -30,10 +33,21 @@ export default function ProfileScreen({ navigation }) {
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.heading}>👤 My Profile</Text>
       <DonutChartWithGradient />
+      <MonthlyBarChart />
 
+      {/* View Receipts Toggle */}
+      <TouchableOpacity onPress={() => setShowHistory(prev => !prev)}>
+        <Text style={styles.toggleHint}>
+          {showHistory ? '🔽 Hide Receipts' : '📑 View Receipts'}
+        </Text>
+      </TouchableOpacity>
+
+      {showHistory && <ReceiptHistory />}
       <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
         <Text style={styles.logoutText}>Logout</Text>
       </TouchableOpacity>
+
+
     </ScrollView>
   );
 }
@@ -66,5 +80,12 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 16,
     fontWeight: '600',
+  },
+  toggleHint: {
+    fontSize: 16,
+    color: '#4A90E2',
+    marginBottom: 12,
+    textAlign: 'center',
+    marginTop: 30,
   },
 });

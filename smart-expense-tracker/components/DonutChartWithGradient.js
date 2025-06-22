@@ -9,12 +9,12 @@ import {
 import { PieChart } from 'react-native-gifted-charts';
 import { collection, getDocs } from 'firebase/firestore';
 import { auth, db } from '../firebaseConfig';
-import ReceiptHistory from './ReceiptHistory';
+
 
 export default function DonutChartWithGradient() {
     const [chartData, setChartData] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [showHistory, setShowHistory] = useState(false);
+    
     const [totalSpent, setTotalSpent] = useState(0);
 
     useEffect(() => {
@@ -89,14 +89,7 @@ export default function DonutChartWithGradient() {
                 </View>
             </View>
 
-            {/* View Receipts Toggle */}
-            <TouchableOpacity onPress={() => setShowHistory(prev => !prev)}>
-                <Text style={styles.toggleHint}>
-                    {showHistory ? '🔽 Hide Receipts' : '📑 View Receipts'}
-                </Text>
-            </TouchableOpacity>
-
-            {showHistory && <ReceiptHistory />}
+            
         </View>
     );
 }
@@ -143,12 +136,7 @@ const styles = StyleSheet.create({
         fontSize: 14,
         color: '#333',
     },
-    toggleHint: {
-        fontSize: 14,
-        color: '#4A90E2',
-        marginBottom: 12,
-        textAlign: 'center',
-    },
+    
     noData: {
         color: '#888',
         marginTop: 30,
