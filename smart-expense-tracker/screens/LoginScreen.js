@@ -1,7 +1,7 @@
 // screens/LoginScreen.js
 import React, { useState } from 'react';
-import { 
-  View, Text, TextInput, TouchableOpacity, StyleSheet, Alert 
+import {
+  View, Text, TextInput, TouchableOpacity, StyleSheet, Alert
 } from 'react-native';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../firebaseConfig';
@@ -19,7 +19,12 @@ export default function LoginScreen({ navigation }) {
         [
           {
             text: 'OK',
-            onPress: () => navigation.replace('Home'),
+            onPress: () => {
+              navigation.reset({
+                index: 0,
+                routes: [{ name: 'BottomTabNavigator' }],  // 'Main' should be the name of the screen where BottomTabNavigator is rendered
+              });
+            },
           },
         ]
       );
@@ -28,26 +33,27 @@ export default function LoginScreen({ navigation }) {
     }
   };
 
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Login</Text>
 
-      <TextInput 
-        placeholder="Email" 
-        value={email} 
-        onChangeText={setEmail} 
-        style={styles.input} 
+      <TextInput
+        placeholder="Email"
+        value={email}
+        onChangeText={setEmail}
+        style={styles.input}
         placeholderTextColor="#757575"
         keyboardType="email-address"
         autoCapitalize="none"
       />
 
-      <TextInput 
-        placeholder="Password" 
-        secureTextEntry 
-        value={password} 
-        onChangeText={setPassword} 
-        style={styles.input} 
+      <TextInput
+        placeholder="Password"
+        secureTextEntry
+        value={password}
+        onChangeText={setPassword}
+        style={styles.input}
         placeholderTextColor="#757575"
       />
 
@@ -55,8 +61,8 @@ export default function LoginScreen({ navigation }) {
         <Text style={styles.buttonText}>Login</Text>
       </TouchableOpacity>
 
-      <Text 
-        style={styles.link} 
+      <Text
+        style={styles.link}
         onPress={() => navigation.navigate('Register')}
       >
         Don't have an account? Register
@@ -66,24 +72,24 @@ export default function LoginScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  container: { 
-    flex: 1, 
-    justifyContent: 'center', 
-    padding: 20, 
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    padding: 20,
     backgroundColor: '#F9FAFB'  // background from theme 
   },
-  title: { 
-    fontSize: 28, 
-    marginBottom: 30, 
-    textAlign: 'center', 
-    fontWeight: '600', 
+  title: {
+    fontSize: 28,
+    marginBottom: 30,
+    textAlign: 'center',
+    fontWeight: '600',
     color: '#212121', // dark text
   },
-  input: { 
-    borderWidth: 1, 
+  input: {
+    borderWidth: 1,
     borderColor: '#E0E0E0', // subtle border 
-    padding: 14, 
-    marginVertical: 10, 
+    padding: 14,
+    marginVertical: 10,
     borderRadius: 8,
     backgroundColor: '#FFFFFF', // card white bg 
     fontSize: 16,
@@ -105,10 +111,10 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '600',
   },
-  link: { 
+  link: {
     color: '#4A90E2',  // blue accent for links
-    marginTop: 25, 
-    textAlign: 'center', 
+    marginTop: 25,
+    textAlign: 'center',
     fontSize: 15,
   },
 });

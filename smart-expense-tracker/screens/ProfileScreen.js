@@ -18,16 +18,13 @@ export default function ProfileScreen({ navigation }) {
           style: 'destructive',
           onPress: async () => {
             await AsyncStorage.removeItem('loginTimestamp');
-            await signOut(auth);
-            navigation.reset({
-              index: 0,
-              routes: [{ name: 'Login' }],
-            });
+            await signOut(auth); // This is enough to trigger navigation
           },
         },
       ]
     );
   };
+
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
