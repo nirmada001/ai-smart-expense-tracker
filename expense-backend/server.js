@@ -5,6 +5,7 @@ require('dotenv').config();
 
 const { extractTextFromImage } = require('./ocr');
 const { generateExpenseMetadata } = require('./ai');
+const { generateSavingsTips } = require('./ai-tips');
 
 const app = express();
 app.use(cors());
@@ -29,6 +30,22 @@ app.post('/api/extract', upload.single('image'), async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Extraction failed' });
+  }
+});
+
+// Route to get tips based on expense summary
+app.post('/api/tips', async (req, res) => {
+  try {
+    const { summary } = req.body; // e.g., { Food: 5000, Transport: 2000 }
+    if (!summary || typeof summary !== 'object') {
+      return res.status(400).json({ error: 'Invalid expense summary' });
+    }
+
+    const tips = await generateSavingsTips(summary);
+    res.json({ tips });
+  } catch (err) {
+    console.error('Error generating tips:', err);
+    res.status(500).json({ error: 'Failed to generate tips' });
   }
 });
 
