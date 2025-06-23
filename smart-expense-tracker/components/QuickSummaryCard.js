@@ -19,15 +19,18 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     width: '100%',
     alignItems: 'center',
+    height: 110,
   },
   label: {
     color: '#0D47A1',
     fontSize: 14,
     marginBottom: 6,
+    marginTop: 6,
   },
   amount: {
     fontSize: 22,
     fontWeight: '700',
     color: '#1565C0',
+    marginTop: 6,
   },
 });

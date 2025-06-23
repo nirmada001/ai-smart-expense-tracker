@@ -23,30 +23,50 @@ export default function RecentActivityPreview({ data = [] }) {
 const styles = StyleSheet.create({
   container: {
     backgroundColor: '#FFF3E0',
-    padding: 14,
-    borderRadius: 12,
+    padding: 16,
+    borderRadius: 16,
     width: '100%',
-    marginBottom: 16,
+    marginBottom: 20,
+    shadowColor: '#FFA726',
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 2,
   },
   heading: {
     fontWeight: '700',
-    marginBottom: 8,
-    color: '#BF360C',
+    fontSize: 16,
+    marginBottom: 12,
+    color: '#E65100',
   },
   item: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingVertical: 4,
+    alignItems: 'center',
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#FFE0B2',
   },
   title: {
     color: '#6D4C41',
+    fontSize: 15,
+    flex: 1,
+    flexShrink: 1,
+    marginRight: 10,
   },
   amount: {
     fontWeight: '600',
     color: '#D84315',
+    fontSize: 15,
+    flexShrink: 0,
   },
   empty: {
     fontStyle: 'italic',
     color: '#A1887F',
+    fontSize: 14,
+    textAlign: 'center',
+    paddingVertical: 8,
   },
 });
+
+
