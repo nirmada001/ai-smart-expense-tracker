@@ -7,6 +7,7 @@ import { auth } from './firebaseConfig';
 import LoginScreen from './screens/LoginScreen';
 import RegisterScreen from './screens/RegisterScreen';
 import DetailScreen from './screens/DetailScreen';
+import EditDetailsScreen from './screens/EditDetailsScreen';
 import BottomTabNavigator from './navigation/BottomTabNavigator'; // new
 
 const Stack = createNativeStackNavigator();
@@ -33,11 +34,13 @@ export default function App() {
           <>
             <Stack.Screen name="BottomTabNavigator" component={BottomTabNavigator} />
             <Stack.Screen name="Details" component={DetailScreen} />
+            <Stack.Screen name="EditDetails" component={EditDetailsScreen} />
           </>
         ) : (
           <>
             <Stack.Screen name="Login" component={LoginScreen} />
             <Stack.Screen name="Register" component={RegisterScreen} />
+            
           </>
         )}
       </Stack.Navigator>

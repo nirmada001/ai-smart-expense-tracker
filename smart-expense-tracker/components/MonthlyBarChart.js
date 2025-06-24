@@ -76,6 +76,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     width: '100%',
     elevation: 2,
+    overflow: 'hidden',
   },
   heading: {
     fontSize: 16,
