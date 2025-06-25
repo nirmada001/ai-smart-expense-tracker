@@ -49,7 +49,7 @@ export default function DetailsScreen({ route, navigation }) {
       Alert.alert('✅ Saved', 'Receipt details have been saved successfully.', [
         {
           text: 'OK',
-          onPress: () => navigation.navigate('Home'),
+          onPress: () => navigation.navigate('BottomTabNavigator'),
         },
       ]);
     } catch (error) {

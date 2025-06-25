@@ -5,6 +5,7 @@ import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from './firebaseConfig';
 
 import LoginScreen from './screens/LoginScreen';
+import HomeScreen from './screens/HomeScreen';
 import RegisterScreen from './screens/RegisterScreen';
 import DetailScreen from './screens/DetailScreen';
 import EditDetailsScreen from './screens/EditDetailsScreen';
@@ -33,6 +34,7 @@ export default function App() {
         {user ? (
           <>
             <Stack.Screen name="BottomTabNavigator" component={BottomTabNavigator} />
+            <Stack.Screen name="Home" component={HomeScreen} />
             <Stack.Screen name="Details" component={DetailScreen} />
             <Stack.Screen name="EditDetails" component={EditDetailsScreen} />
           </>

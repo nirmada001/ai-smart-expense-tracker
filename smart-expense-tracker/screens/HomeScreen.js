@@ -1,6 +1,18 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { collection, getDocs, query, where, orderBy, limit } from 'firebase/firestore';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  ScrollView,
+} from 'react-native';
+import {
+  collection,
+  getDocs,
+  query,
+  orderBy,
+  limit,
+} from 'firebase/firestore';
 import { auth, db } from '../firebaseConfig';
 import QuickSummaryCard from '../components/QuickSummaryCard';
 import RecentActivityPreview from '../components/RecentActivityPreview';
@@ -24,7 +36,7 @@ export default function HomeScreen({ navigation }) {
         // Monthly total
         const snap = await getDocs(receiptsRef);
         let total = 0;
-        snap.forEach(doc => {
+        snap.forEach((doc) => {
           const data = doc.data();
           const receiptDate = new Date(data.date);
           if (!isNaN(receiptDate) && receiptDate >= startOfMonth) {
@@ -42,7 +54,7 @@ export default function HomeScreen({ navigation }) {
         );
         const recentSnap = await getDocs(recentQuery);
         const recent = [];
-        recentSnap.forEach(doc => {
+        recentSnap.forEach((doc) => {
           const { title, total } = doc.data();
           recent.push({
             title: title || 'Untitled',
@@ -59,30 +71,36 @@ export default function HomeScreen({ navigation }) {
   }, []);
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Smart Expense Tracker</Text>
-      <Text style={styles.subtitle}>Snap, Track & Save Smarter</Text>
+    <ScrollView contentContainerStyle={styles.scrollContent}>
+      <View style={styles.container}>
+        <Text style={styles.title}>Smart Expense Tracker</Text>
+        <Text style={styles.subtitle}>Snap, Track & Save Smarter</Text>
 
-      <QuickSummaryCard total={monthlyTotal} style={{ marginBottom: 20 }} />
-      <RecentActivityPreview data={recentExpenses} style={{ marginBottom: 20 }} />
-      <SavingsTip />
+        <QuickSummaryCard total={monthlyTotal} style={{ marginBottom: 20 }} />
+        <RecentActivityPreview data={recentExpenses} style={{ marginBottom: 20 }} />
+        <SavingsTip />
 
-      <TouchableOpacity
-        style={styles.button}
-        onPress={() => navigation.navigate('Upload')}
-      >
-        <Text style={styles.buttonText}>📄 Upload a Bill</Text>
-      </TouchableOpacity>
-    </View>
+        <TouchableOpacity
+          style={styles.button}
+          onPress={() => navigation.navigate('Upload')}
+        >
+          <Text style={styles.buttonText}>📄 Upload a Bill</Text>
+        </TouchableOpacity>
+      </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
+  scrollContent: {
+    // paddingBottom: 40,
+  },
   container: {
-    flex: 1,
-    backgroundColor: '#F9FAFB', // soft gray background
+    flexGrow: 1,
+    backgroundColor: '#F9FAFB',
     paddingHorizontal: 20,
     paddingTop: 60,
+    height: '100%',
   },
   title: {
     fontSize: 30,

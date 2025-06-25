@@ -1,26 +1,37 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ActivityIndicator } from 'react-native';
 import { BarChart } from 'react-native-gifted-charts';
-import { collection, getDocs } from 'firebase/firestore';
+import { collection, onSnapshot } from 'firebase/firestore';
 import { auth, db } from '../firebaseConfig';
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+const CATEGORY_COLORS = {
+  Food: '#FF6384',
+  Transport: '#36A2EB',
+  Utilities: '#FFCE56',
+  Shopping: '#4BC0C0',
+  Fitness: '#9966FF',
+  Health: '#FF9F40',
+  Others: '#A9A9A9',
+};
 
 export default function MonthlyBarChart() {
   const [barData, setBarData] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    (async () => {
-      const user = auth.currentUser;
-      if (!user) return;
+    const user = auth.currentUser;
+    if (!user) return;
 
-      try {
-        const snap = await getDocs(collection(db, 'users', user.uid, 'receipts'));
+    const unsubscribe = onSnapshot(
+      collection(db, 'users', user.uid, 'receipts'),
+      (snap) => {
         const monthlyTotals = Array(12).fill(0);
+        const categoryMap = Array(12).fill(null).map(() => ({})); // for most common category
 
         snap.forEach((doc) => {
-          const { total, date } = doc.data();
+          const { total, date, category = 'Others' } = doc.data();
           if (!date || !total) return;
 
           const parsedDate = new Date(date);
@@ -28,24 +39,38 @@ export default function MonthlyBarChart() {
 
           const month = parsedDate.getMonth();
           const amount = parseFloat(String(total).replace(/,/g, ''));
-          if (!isNaN(amount)) {
-            monthlyTotals[month] += amount;
+          if (isNaN(amount)) return;
+
+          monthlyTotals[month] += amount;
+
+          // Tally categories
+          if (!categoryMap[month][category]) {
+            categoryMap[month][category] = 0;
           }
+          categoryMap[month][category] += amount;
         });
 
-        const chartData = monthlyTotals.map((val, i) => ({
-          value: parseFloat(val.toFixed(2)),
-          label: MONTHS[i],
-          frontColor: '#4A90E2',
-        }));
+        // Create chart data with color by dominant category
+        const chartData = monthlyTotals.map((val, i) => {
+          const topCategory = Object.entries(categoryMap[i])
+            .sort((a, b) => b[1] - a[1])[0]?.[0] || 'Others';
+          return {
+            value: parseFloat(val.toFixed(2)),
+            label: MONTHS[i],
+            frontColor: CATEGORY_COLORS[topCategory] || CATEGORY_COLORS['Others'],
+          };
+        });
 
         setBarData(chartData);
-      } catch (err) {
-        console.error('Bar chart data load error:', err);
-      } finally {
+        setLoading(false);
+      },
+      (error) => {
+        console.error('Error in onSnapshot:', error);
         setLoading(false);
       }
-    })();
+    );
+
+    return () => unsubscribe(); // cleanup listener
   }, []);
 
   if (loading) return <ActivityIndicator size="small" color="#4A90E2" />;

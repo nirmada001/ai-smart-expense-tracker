@@ -11,7 +11,7 @@ import { SwipeListView } from 'react-native-swipe-list-view';
 import { collection, getDocs, deleteDoc, doc } from 'firebase/firestore';
 import { auth, db } from '../firebaseConfig';
 
-export default function ReceiptHistory({ navigation }) {
+export default function ReceiptHistory({ navigation, refreshTrigger, onDelete }) {
   const [receipts, setReceipts] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -19,6 +19,7 @@ export default function ReceiptHistory({ navigation }) {
     const user = auth.currentUser;
     if (!user) return;
 
+    setLoading(true);
     try {
       const snapshot = await getDocs(collection(db, 'users', user.uid, 'receipts'));
       const data = snapshot.docs.map(doc => ({
@@ -35,7 +36,7 @@ export default function ReceiptHistory({ navigation }) {
 
   useEffect(() => {
     fetchReceipts();
-  }, []);
+  }, [refreshTrigger]);
 
   const handleDelete = async (id) => {
     const user = auth.currentUser;
@@ -44,6 +45,7 @@ export default function ReceiptHistory({ navigation }) {
     try {
       await deleteDoc(doc(db, 'users', user.uid, 'receipts', id));
       setReceipts(prev => prev.filter(item => item.id !== id));
+      onDelete?.(); // Trigger parent to refresh data if needed
     } catch (err) {
       console.error('Failed to delete:', err);
     }
@@ -61,11 +63,24 @@ export default function ReceiptHistory({ navigation }) {
   };
 
   const handleEdit = (item) => {
-    navigation.navigate('EditDetails', { receipt: item });
+    if (navigation) {
+      navigation.navigate('EditDetails', { receipt: item });
+    } else {
+      console.warn('Navigation prop is missing!');
+    }
   };
 
-  if (loading) return <ActivityIndicator size="large" color="#4A90E2" />;
-  if (!receipts.length) return <Text style={styles.noData}>No receipts found.</Text>;
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#4A90E2" />
+      </View>
+    );
+  }
+
+  if (!receipts.length) {
+    return <Text style={styles.noData}>No receipts found.</Text>;
+  }
 
   return (
     <View style={styles.container}>
@@ -100,6 +115,7 @@ export default function ReceiptHistory({ navigation }) {
         )}
         leftOpenValue={75}
         rightOpenValue={-75}
+        contentContainerStyle={{ paddingBottom: 40 }}
       />
     </View>
   );
@@ -109,6 +125,11 @@ const styles = StyleSheet.create({
   container: {
     width: '100%',
     marginTop: 20,
+    paddingHorizontal: 10,
+  },
+  loadingContainer: {
+    marginTop: 30,
+    alignItems: 'center',
   },
   title: {
     fontSize: 20,
@@ -135,6 +156,7 @@ const styles = StyleSheet.create({
     marginTop: 20,
     color: '#888',
     textAlign: 'center',
+    fontSize: 16,
   },
   hiddenContainer: {
     flexDirection: 'row',

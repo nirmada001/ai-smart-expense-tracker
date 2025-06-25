@@ -119,7 +119,7 @@ const styles = StyleSheet.create({
     },
     legendContainer: {
         flexDirection: 'column',
-        maxWidth: 140,
+        maxWidth: 110,
     },
     legendItem: {
         flexDirection: 'row',
