@@ -43,24 +43,10 @@ export default function ProfileScreen({ navigation }) {
 
           {/* 👇 Tapping chart triggers refresh */}
           <TouchableOpacity onPress={() => setRefreshTrigger(prev => !prev)}>
-            <DonutChartWithGradient refreshTrigger={refreshTrigger} />
+            <DonutChartWithGradient/>
           </TouchableOpacity>
 
           <MonthlyBarChart />
-
-          <TouchableOpacity onPress={() => setShowHistory(prev => !prev)}>
-            <Text style={styles.toggleHint}>
-              {showHistory ? '🔽 Hide Receipts' : '📑 View Receipts'}
-            </Text>
-          </TouchableOpacity>
-
-          {showHistory && (
-            <ReceiptHistory
-              navigation={navigation}
-              onDelete={() => setRefreshTrigger(prev => !prev)}
-              refreshTrigger={refreshTrigger}
-            />
-          )}
 
           <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
             <Text style={styles.logoutText}>Logout</Text>

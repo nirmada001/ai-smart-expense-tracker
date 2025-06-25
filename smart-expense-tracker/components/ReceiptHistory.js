@@ -6,14 +6,21 @@ import {
   ActivityIndicator,
   TouchableOpacity,
   Alert,
+  Platform,
 } from 'react-native';
 import { SwipeListView } from 'react-native-swipe-list-view';
 import { collection, getDocs, deleteDoc, doc } from 'firebase/firestore';
 import { auth, db } from '../firebaseConfig';
+import { Picker } from '@react-native-picker/picker';
 
 export default function ReceiptHistory({ navigation, refreshTrigger, onDelete }) {
   const [receipts, setReceipts] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+
+  const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
   const fetchReceipts = async () => {
     const user = auth.currentUser;
@@ -22,11 +29,17 @@ export default function ReceiptHistory({ navigation, refreshTrigger, onDelete })
     setLoading(true);
     try {
       const snapshot = await getDocs(collection(db, 'users', user.uid, 'receipts'));
-      const data = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
-      setReceipts(data.reverse()); // show latest first
+      const data = snapshot.docs
+        .map(doc => ({ id: doc.id, ...doc.data() }))
+        .filter((item) => {
+          const date = new Date(item.date);
+          return (
+            date.getMonth() === selectedMonth &&
+            date.getFullYear() === selectedYear
+          );
+        });
+
+      setReceipts(data.sort((a, b) => new Date(b.date) - new Date(a.date))); // latest first
     } catch (err) {
       console.error('Error fetching receipts:', err);
     } finally {
@@ -36,7 +49,7 @@ export default function ReceiptHistory({ navigation, refreshTrigger, onDelete })
 
   useEffect(() => {
     fetchReceipts();
-  }, [refreshTrigger]);
+  }, [refreshTrigger, selectedMonth, selectedYear]);
 
   const handleDelete = async (id) => {
     const user = auth.currentUser;
@@ -45,78 +58,92 @@ export default function ReceiptHistory({ navigation, refreshTrigger, onDelete })
     try {
       await deleteDoc(doc(db, 'users', user.uid, 'receipts', id));
       setReceipts(prev => prev.filter(item => item.id !== id));
-      onDelete?.(); // Trigger parent to refresh data if needed
+      onDelete?.(); // Notify parent to refresh
     } catch (err) {
       console.error('Failed to delete:', err);
     }
   };
 
   const confirmDelete = (id) => {
-    Alert.alert(
-      'Delete Receipt',
-      'Are you sure you want to delete this receipt?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        { text: 'Delete', style: 'destructive', onPress: () => handleDelete(id) },
-      ]
-    );
+    Alert.alert('Delete Receipt', 'Are you sure you want to delete this receipt?', [
+      { text: 'Cancel', style: 'cancel' },
+      { text: 'Delete', style: 'destructive', onPress: () => handleDelete(id) },
+    ]);
   };
 
   const handleEdit = (item) => {
-    if (navigation) {
-      navigation.navigate('EditDetails', { receipt: item });
-    } else {
-      console.warn('Navigation prop is missing!');
-    }
+    navigation?.navigate('EditDetails', { receipt: item });
   };
 
-  if (loading) {
-    return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#4A90E2" />
-      </View>
-    );
-  }
-
-  if (!receipts.length) {
-    return <Text style={styles.noData}>No receipts found.</Text>;
-  }
+  const years = Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i);
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>📑 Saved Receipts</Text>
-      <SwipeListView
-        data={receipts}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <View style={styles.card}>
-            <Text style={styles.text}>🏪 Shop: {item.shop}</Text>
-            <Text style={styles.text}>🗓️ Date: {item.date}</Text>
-            <Text style={styles.text}>📝 Title: {item.title}</Text>
-            <Text style={styles.text}>📂 Category: {item.category}</Text>
-            <Text style={styles.text}>💵 Total: Rs. {item.total}</Text>
-          </View>
-        )}
-        renderHiddenItem={({ item }) => (
-          <View style={styles.hiddenContainer}>
-            <TouchableOpacity
-              style={[styles.hiddenButton, styles.editBtn]}
-              onPress={() => handleEdit(item)}
-            >
-              <Text style={styles.hiddenText}>Edit</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.hiddenButton, styles.deleteBtn]}
-              onPress={() => confirmDelete(item.id)}
-            >
-              <Text style={styles.hiddenText}>Delete</Text>
-            </TouchableOpacity>
-          </View>
-        )}
-        leftOpenValue={75}
-        rightOpenValue={-75}
-        contentContainerStyle={{ paddingBottom: 40 }}
-      />
+
+      {/* Filter Dropdown */}
+      <View style={styles.filterContainer}>
+        <Picker
+          selectedValue={selectedMonth}
+          style={styles.picker}
+          onValueChange={(itemValue) => setSelectedMonth(itemValue)}
+          mode="dropdown"
+        >
+          {MONTH_NAMES.map((name, index) => (
+            <Picker.Item key={index} label={name} value={index} />
+          ))}
+        </Picker>
+
+        <Picker
+          selectedValue={selectedYear}
+          style={styles.picker}
+          onValueChange={(itemValue) => setSelectedYear(itemValue)}
+          mode="dropdown"
+        >
+          {years.map((year, index) => (
+            <Picker.Item key={index} label={year.toString()} value={year} />
+          ))}
+        </Picker>
+      </View>
+
+      {loading ? (
+        <ActivityIndicator size="large" color="#4A90E2" style={{ marginTop: 20 }} />
+      ) : receipts.length === 0 ? (
+        <Text style={styles.noData}>No receipts for this month.</Text>
+      ) : (
+        <SwipeListView
+          data={receipts}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item }) => (
+            <View style={styles.card}>
+              <Text style={styles.text}>🏪 Shop: {item.shop}</Text>
+              <Text style={styles.text}>🗓️ Date: {item.date}</Text>
+              <Text style={styles.text}>📝 Title: {item.title}</Text>
+              <Text style={styles.text}>📂 Category: {item.category}</Text>
+              <Text style={styles.text}>💵 Total: Rs. {item.total}</Text>
+            </View>
+          )}
+          renderHiddenItem={({ item }) => (
+            <View style={styles.hiddenContainer}>
+              <TouchableOpacity
+                style={[styles.hiddenButton, styles.editBtn]}
+                onPress={() => handleEdit(item)}
+              >
+                <Text style={styles.hiddenText}>Edit</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.hiddenButton, styles.deleteBtn]}
+                onPress={() => confirmDelete(item.id)}
+              >
+                <Text style={styles.hiddenText}>Delete</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+          leftOpenValue={75}
+          rightOpenValue={-75}
+          contentContainerStyle={{ paddingBottom: 40 }}
+        />
+      )}
     </View>
   );
 }
@@ -127,37 +154,37 @@ const styles = StyleSheet.create({
     marginTop: 20,
     paddingHorizontal: 10,
   },
-  loadingContainer: {
-    marginTop: 30,
-    alignItems: 'center',
-  },
   title: {
-    fontSize: 20,
-    fontWeight: '600',
-    marginBottom: 12,
+    fontSize: 22,
+    fontWeight: '700',
     textAlign: 'center',
-    marginTop: 70,
+    marginBottom: 16,
+  },
+  filterContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 10,
+    marginBottom: 10,
+  },
+  picker: {
+    width: Platform.OS === 'ios' ? 140 : 120,
+    backgroundColor: '#F1F1F1',
+    borderRadius: 8,
   },
   card: {
-    backgroundColor: '#fff',
+    backgroundColor: '#ffffff',
     padding: 16,
     borderRadius: 10,
     marginBottom: 12,
     shadowColor: '#000',
     shadowOpacity: 0.05,
     shadowOffset: { width: 0, height: 2 },
-    elevation: 3,
+    elevation: 2,
   },
   text: {
     fontSize: 15,
     marginBottom: 4,
     color: '#333',
-  },
-  noData: {
-    marginTop: 20,
-    color: '#888',
-    textAlign: 'center',
-    fontSize: 16,
   },
   hiddenContainer: {
     flexDirection: 'row',
@@ -187,5 +214,11 @@ const styles = StyleSheet.create({
   hiddenText: {
     color: '#fff',
     fontWeight: '600',
+  },
+  noData: {
+    marginTop: 20,
+    fontSize: 16,
+    color: '#888',
+    textAlign: 'center',
   },
 });

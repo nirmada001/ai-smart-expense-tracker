@@ -4,6 +4,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import HomeScreen from '../screens/HomeScreen';
 import UploadScreen from '../screens/UploadScreen';
 import ProfileScreen from '../screens/ProfileScreen';
+import ReceiptHistory from '../components/ReceiptHistory';
 import { Ionicons } from '@expo/vector-icons'; // or 'react-native-vector-icons/Ionicons'
 
 const Tab = createBottomTabNavigator();
@@ -30,6 +31,8 @@ export default function BottomTabNavigator() {
             iconName = focused ? 'cloud-upload' : 'cloud-upload-outline';
           } else if (route.name === 'Profile') {
             iconName = focused ? 'person-circle' : 'person-circle-outline';
+          }else if (route.name === 'Receipts') {
+            iconName = focused ? 'document-text' : 'document-text-outline';
           }
 
           return <Ionicons name={iconName} size={size} color={color} />;
@@ -38,6 +41,7 @@ export default function BottomTabNavigator() {
     >
       <Tab.Screen name="Home" component={HomeScreen} />
       <Tab.Screen name="Upload" component={UploadScreen} />
+      <Tab.Screen name="Receipts" component={ReceiptHistory} />
       <Tab.Screen name="Profile" component={ProfileScreen} />
     </Tab.Navigator>
   );

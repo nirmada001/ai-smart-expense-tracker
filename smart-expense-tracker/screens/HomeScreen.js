@@ -72,7 +72,7 @@ export default function HomeScreen({ navigation }) {
         <RecentActivityPreview
           data={recentExpenses}
           style={{ marginBottom: 20 }}
-          onPressItem={() => navigation.navigate('ReceiptHistory')}
+          onPressItem={() => navigation.navigate('BottomTabNavigator', { screen: 'Receipts' })}
         />
         <SavingsTip />
 

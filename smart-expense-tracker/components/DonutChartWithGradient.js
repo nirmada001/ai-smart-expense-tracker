@@ -4,15 +4,20 @@ import {
     Text,
     ActivityIndicator,
     StyleSheet,
+    Platform,
 } from 'react-native';
 import { PieChart } from 'react-native-gifted-charts';
-import { collection, getDocs } from 'firebase/firestore';
+import { collection, getDocs, query, where } from 'firebase/firestore';
 import { auth, db } from '../firebaseConfig';
+import { Picker } from '@react-native-picker/picker';
 
 export default function DonutChartWithGradient({ refreshTrigger }) {
     const [chartData, setChartData] = useState([]);
     const [loading, setLoading] = useState(true);
     const [totalSpent, setTotalSpent] = useState(0);
+
+    const now = new Date();
+    const [selectedMonth, setSelectedMonth] = useState(`${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`);
 
     const fetchChartData = async () => {
         setLoading(true);
@@ -20,14 +25,21 @@ export default function DonutChartWithGradient({ refreshTrigger }) {
         if (!user) return;
 
         try {
-            const snap = await getDocs(collection(db, 'users', user.uid, 'receipts'));
+            const snapshot = await getDocs(collection(db, 'users', user.uid, 'receipts'));
             const totals = {};
             let sum = 0;
 
-            snap.forEach(doc => {
-                let { category, total } = doc.data();
-                let value = parseFloat(String(total).replace(/,/g, ''));
-                if (!isNaN(value) && category) {
+            const selectedYear = parseInt(selectedMonth.split('-')[0]);
+            const selectedMonthNum = parseInt(selectedMonth.split('-')[1]) - 1;
+            const monthStart = new Date(selectedYear, selectedMonthNum, 1);
+            const monthEnd = new Date(selectedYear, selectedMonthNum + 1, 0);
+
+            snapshot.forEach(doc => {
+                const { category, total, date } = doc.data();
+                const value = parseFloat(String(total).replace(/,/g, ''));
+                const receiptDate = new Date(date);
+
+                if (!isNaN(value) && category && receiptDate >= monthStart && receiptDate <= monthEnd) {
                     totals[category] = (totals[category] || 0) + value;
                     sum += value;
                 }
@@ -53,37 +65,78 @@ export default function DonutChartWithGradient({ refreshTrigger }) {
 
     useEffect(() => {
         fetchChartData();
-    }, [refreshTrigger]); // refresh whenever prop changes
+    }, [selectedMonth, refreshTrigger]);
 
-    if (loading) return <ActivityIndicator size="large" color="#4A90E2" />;
-    if (!chartData.length) return <Text style={styles.noData}>No data to show</Text>;
+    const getMonthOptions = () => {
+        const options = [];
+        const currentYear = new Date().getFullYear();
+        for (let y = currentYear; y >= currentYear - 2; y--) {
+            for (let m = 11; m >= 0; m--) {
+                const key = `${y}-${String(m + 1).padStart(2, '0')}`;
+                const label = new Date(y, m).toLocaleString('default', { month: 'short', year: 'numeric' });
+                options.push({ label, value: key });
+            }
+        }
+        return options;
+    };
+
+    if (loading) {
+        return (
+            <View style={styles.loadingWrapper}>
+                <ActivityIndicator size="large" color="#4A90E2" />
+            </View>
+        );
+    }
+
 
     return (
         <View style={styles.container}>
             <Text style={styles.title}>📊 Spending by Category</Text>
-            <View style={styles.chartLegendRow}>
-                <PieChart
-                    data={chartData}
-                    donut
-                    showText={false}
-                    radius={100}
-                    innerRadius={80}
-                    isAnimated
-                    centerLabelComponent={() => (
-                        <Text style={{ fontSize: 16, fontWeight: 'bold' }}>
-                            LKR {totalSpent.toFixed(0)}
-                        </Text>
-                    )}
-                />
-                <View style={styles.legendContainer}>
-                    {chartData.map((item, index) => (
-                        <View key={index} style={styles.legendItem}>
-                            <View style={[styles.legendColor, { backgroundColor: item.color }]} />
-                            <Text style={styles.legendLabel}>{item.category}</Text>
-                        </View>
+
+            <View style={styles.pickerWrapper}>
+                <Picker
+                    selectedValue={selectedMonth}
+                    onValueChange={setSelectedMonth}
+                    style={styles.picker}
+                    mode="dropdown"
+                    dropdownIconColor="#4A90E2"
+                >
+                    {getMonthOptions().map((option) => (
+                        <Picker.Item key={option.value} label={option.label} value={option.value} />
                     ))}
-                </View>
+                </Picker>
             </View>
+
+            <View style={styles.chartLegendRow}>
+                {chartData.length ? (
+                    <>
+                        <PieChart
+                            data={chartData}
+                            donut
+                            showText={false}
+                            radius={100}
+                            innerRadius={80}
+                            isAnimated
+                            centerLabelComponent={() => (
+                                <Text style={{ fontSize: 16, fontWeight: 'bold' }}>
+                                    LKR {totalSpent.toFixed(0)}
+                                </Text>
+                            )}
+                        />
+                        <View style={styles.legendContainer}>
+                            {chartData.map((item, index) => (
+                                <View key={index} style={styles.legendItem}>
+                                    <View style={[styles.legendColor, { backgroundColor: item.color }]} />
+                                    <Text style={styles.legendLabel}>{item.category}</Text>
+                                </View>
+                            ))}
+                        </View>
+                    </>
+                ) : (
+                    <Text style={styles.noData}>No data available for this month</Text>
+                )}
+            </View>
+
         </View>
     );
 }
@@ -92,24 +145,39 @@ const styles = StyleSheet.create({
     container: {
         marginTop: 20,
         marginHorizontal: 12,
-        backgroundColor: '#FFF',
+        backgroundColor: '#FFFFFF',
         borderRadius: 12,
         padding: 20,
-        elevation: 3,
+        elevation: 4,
+        shadowColor: '#000',
+        shadowOpacity: 0.1,
+        shadowRadius: 6,
+        shadowOffset: { width: 0, height: 2 },
         alignItems: 'center',
     },
     title: {
         fontSize: 18,
         fontWeight: '700',
-        marginBottom: 20,
+        marginBottom: 10,
         textAlign: 'center',
+    },
+    pickerWrapper: {
+        width: '100%',
+        backgroundColor: '#F0F4F8',
+        borderRadius: 10,
+        overflow: 'hidden',
+        marginBottom: 20,
+    },
+    picker: {
+        width: '100%',
+        height: Platform.OS === 'android' ? 48 : undefined,
+        color: '#212121',
     },
     chartLegendRow: {
         flexDirection: 'row',
         justifyContent: 'center',
         alignItems: 'center',
         gap: 20,
-        marginBottom: 24,
     },
     legendContainer: {
         flexDirection: 'column',
@@ -135,4 +203,11 @@ const styles = StyleSheet.create({
         marginTop: 30,
         textAlign: 'center',
     },
+    loadingWrapper: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        height: 200,
+    },
+
 });
