@@ -8,10 +8,10 @@ import {
 } from 'react-native';
 import {
   collection,
-  getDocs,
   query,
   orderBy,
   limit,
+  onSnapshot
 } from 'firebase/firestore';
 import { auth, db } from '../firebaseConfig';
 import QuickSummaryCard from '../components/QuickSummaryCard';
@@ -23,51 +23,43 @@ export default function HomeScreen({ navigation }) {
   const [recentExpenses, setRecentExpenses] = useState([]);
 
   useEffect(() => {
-    const fetchData = async () => {
-      const user = auth.currentUser;
-      if (!user) return;
+    const user = auth.currentUser;
+    if (!user) return;
 
-      const now = new Date();
-      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const receiptsRef = collection(db, 'users', user.uid, 'receipts');
 
-      try {
-        const receiptsRef = collection(db, 'users', user.uid, 'receipts');
+    const unsubscribe = onSnapshot(receiptsRef, (snapshot) => {
+      let total = 0;
+      const allReceipts = [];
 
-        // Monthly total
-        const snap = await getDocs(receiptsRef);
-        let total = 0;
-        snap.forEach((doc) => {
-          const data = doc.data();
-          const receiptDate = new Date(data.date);
-          if (!isNaN(receiptDate) && receiptDate >= startOfMonth) {
-            const amount = parseFloat(String(data.total).replace(/,/g, ''));
-            if (!isNaN(amount)) total += amount;
-          }
+      snapshot.forEach((doc) => {
+        const data = doc.data();
+        const receiptDate = new Date(data.date);
+        const amount = parseFloat(String(data.total).replace(/,/g, ''));
+
+        if (!isNaN(receiptDate) && receiptDate >= startOfMonth && !isNaN(amount)) {
+          total += amount;
+        }
+
+        allReceipts.push({
+          title: data.title || 'Untitled',
+          amount: amount || 0,
+          date: data.date,
         });
-        setMonthlyTotal(total);
+      });
 
-        // Recent 5 expenses
-        const recentQuery = query(
-          receiptsRef,
-          orderBy('date', 'desc'),
-          limit(5)
-        );
-        const recentSnap = await getDocs(recentQuery);
-        const recent = [];
-        recentSnap.forEach((doc) => {
-          const { title, total } = doc.data();
-          recent.push({
-            title: title || 'Untitled',
-            amount: parseFloat(String(total).replace(/,/g, '')) || 0,
-          });
-        });
-        setRecentExpenses(recent);
-      } catch (error) {
-        console.error('Failed to fetch expense data:', error);
-      }
-    };
+      // Sort and take the top 5 recent receipts
+      const recent = allReceipts
+        .sort((a, b) => new Date(b.date) - new Date(a.date))
+        .slice(0, 5);
 
-    fetchData();
+      setMonthlyTotal(total);
+      setRecentExpenses(recent);
+    });
+
+    return () => unsubscribe(); // cleanup
   }, []);
 
   return (
@@ -77,7 +69,11 @@ export default function HomeScreen({ navigation }) {
         <Text style={styles.subtitle}>Snap, Track & Save Smarter</Text>
 
         <QuickSummaryCard total={monthlyTotal} style={{ marginBottom: 20 }} />
-        <RecentActivityPreview data={recentExpenses} style={{ marginBottom: 20 }} />
+        <RecentActivityPreview
+          data={recentExpenses}
+          style={{ marginBottom: 20 }}
+          onPressItem={() => navigation.navigate('ReceiptHistory')}
+        />
         <SavingsTip />
 
         <TouchableOpacity
@@ -93,14 +89,14 @@ export default function HomeScreen({ navigation }) {
 
 const styles = StyleSheet.create({
   scrollContent: {
-    // paddingBottom: 40,
+    paddingBottom: 40,
   },
   container: {
     flexGrow: 1,
     backgroundColor: '#F9FAFB',
     paddingHorizontal: 20,
     paddingTop: 60,
-    height: '100%',
+    minHeight: '100%',
   },
   title: {
     fontSize: 30,

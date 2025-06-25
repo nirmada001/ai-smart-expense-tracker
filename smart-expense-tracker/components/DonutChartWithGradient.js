@@ -4,67 +4,63 @@ import {
     Text,
     ActivityIndicator,
     StyleSheet,
-    TouchableOpacity,
 } from 'react-native';
 import { PieChart } from 'react-native-gifted-charts';
 import { collection, getDocs } from 'firebase/firestore';
 import { auth, db } from '../firebaseConfig';
 
-
-export default function DonutChartWithGradient() {
+export default function DonutChartWithGradient({ refreshTrigger }) {
     const [chartData, setChartData] = useState([]);
     const [loading, setLoading] = useState(true);
-    
     const [totalSpent, setTotalSpent] = useState(0);
 
+    const fetchChartData = async () => {
+        setLoading(true);
+        const user = auth.currentUser;
+        if (!user) return;
+
+        try {
+            const snap = await getDocs(collection(db, 'users', user.uid, 'receipts'));
+            const totals = {};
+            let sum = 0;
+
+            snap.forEach(doc => {
+                let { category, total } = doc.data();
+                let value = parseFloat(String(total).replace(/,/g, ''));
+                if (!isNaN(value) && category) {
+                    totals[category] = (totals[category] || 0) + value;
+                    sum += value;
+                }
+            });
+
+            const colors = ['#4CAF50', '#FF9800', '#2196F3', '#9C27B0', '#F44336', '#FFC107'];
+            const data = Object.entries(totals).map(([cat, val], i) => ({
+                value: parseFloat(val.toFixed(2)),
+                color: colors[i % colors.length],
+                gradientCenterColor: colors[i % colors.length],
+                text: cat,
+                category: cat,
+            }));
+
+            setChartData(data);
+            setTotalSpent(sum);
+        } catch (e) {
+            console.error('Error loading donut chart data:', e);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     useEffect(() => {
-        (async () => {
-            const user = auth.currentUser;
-            if (!user) return;
-
-            try {
-                const snap = await getDocs(collection(db, 'users', user.uid, 'receipts'));
-                const totals = {};
-                let sum = 0;
-
-                snap.forEach(doc => {
-                    let { category, total } = doc.data();
-                    let value = parseFloat(String(total).replace(/,/g, ''));
-                    if (!isNaN(value) && category) {
-                        totals[category] = (totals[category] || 0) + value;
-                        sum += value;
-                    }
-                });
-
-                const colors = ['#4CAF50', '#FF9800', '#2196F3', '#9C27B0', '#F44336', '#FFC107'];
-                const data = Object.entries(totals).map(([cat, val], i) => ({
-                    value: parseFloat(val.toFixed(2)),
-                    color: colors[i % colors.length],
-                    gradientCenterColor: colors[i % colors.length],
-                    text: cat,
-                    category: cat,
-                }));
-
-                setChartData(data);
-                setTotalSpent(sum);
-            } catch (e) {
-                console.error('Error loading donut chart data:', e);
-            } finally {
-                setLoading(false);
-            }
-        })();
-    }, []);
+        fetchChartData();
+    }, [refreshTrigger]); // refresh whenever prop changes
 
     if (loading) return <ActivityIndicator size="large" color="#4A90E2" />;
     if (!chartData.length) return <Text style={styles.noData}>No data to show</Text>;
 
     return (
         <View style={styles.container}>
-
-            {/* Title */}
             <Text style={styles.title}>📊 Spending by Category</Text>
-
-            {/* Chart + Legend Row */}
             <View style={styles.chartLegendRow}>
                 <PieChart
                     data={chartData}
@@ -88,8 +84,6 @@ export default function DonutChartWithGradient() {
                     ))}
                 </View>
             </View>
-
-            
         </View>
     );
 }
@@ -136,7 +130,6 @@ const styles = StyleSheet.create({
         fontSize: 14,
         color: '#333',
     },
-    
     noData: {
         color: '#888',
         marginTop: 30,

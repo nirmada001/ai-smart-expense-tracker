@@ -33,29 +33,31 @@ export default function ProfileScreen({ navigation }) {
     ]);
   };
 
-  // For layout purposes only – a dummy FlatList
   return (
     <FlatList
-      data={[]} // No actual data
+      data={[]}
       keyExtractor={() => 'dummy'}
       ListHeaderComponent={
         <View style={styles.container}>
           <Text style={styles.heading}>👤 My Profile</Text>
-          <DonutChartWithGradient />
+
+          {/* 👇 Tapping chart triggers refresh */}
+          <TouchableOpacity onPress={() => setRefreshTrigger(prev => !prev)}>
+            <DonutChartWithGradient refreshTrigger={refreshTrigger} />
+          </TouchableOpacity>
+
           <MonthlyBarChart />
 
-          {/* Toggle Button */}
           <TouchableOpacity onPress={() => setShowHistory(prev => !prev)}>
             <Text style={styles.toggleHint}>
               {showHistory ? '🔽 Hide Receipts' : '📑 View Receipts'}
             </Text>
           </TouchableOpacity>
 
-          {/* Conditionally show receipt list */}
           {showHistory && (
             <ReceiptHistory
               navigation={navigation}
-              onDelete={() => setRefreshTrigger(prev => !prev)} // trigger refresh
+              onDelete={() => setRefreshTrigger(prev => !prev)}
               refreshTrigger={refreshTrigger}
             />
           )}

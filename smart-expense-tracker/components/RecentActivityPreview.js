@@ -1,8 +1,8 @@
 // components/RecentActivityPreview.js
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 
-export default function RecentActivityPreview({ data = [] }) {
+export default function RecentActivityPreview({ data = [], onPressItem }) {
   return (
     <View style={styles.container}>
       <Text style={styles.heading}>🕒 Recent Expenses</Text>
@@ -10,10 +10,12 @@ export default function RecentActivityPreview({ data = [] }) {
         <Text style={styles.empty}>No recent activity</Text>
       ) : (
         data.slice(0, 3).map((item, index) => (
-          <View key={index} style={styles.item}>
-            <Text style={styles.title}>{item.title}</Text>
-            <Text style={styles.amount}>LKR {item.amount}</Text>
-          </View>
+          <TouchableOpacity key={index} onPress={() => onPressItem?.(item)}>
+            <View style={styles.item}>
+              <Text style={styles.title}>{item.title}</Text>
+              <Text style={styles.amount}>LKR {item.amount}</Text>
+            </View>
+          </TouchableOpacity>
         ))
       )}
     </View>
@@ -68,5 +70,3 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
   },
 });
-
-

@@ -10,6 +10,7 @@ import RegisterScreen from './screens/RegisterScreen';
 import DetailScreen from './screens/DetailScreen';
 import EditDetailsScreen from './screens/EditDetailsScreen';
 import BottomTabNavigator from './navigation/BottomTabNavigator'; // new
+import ReceiptHistory from './components/ReceiptHistory';
 
 const Stack = createNativeStackNavigator();
 
@@ -37,6 +38,7 @@ export default function App() {
             <Stack.Screen name="Home" component={HomeScreen} />
             <Stack.Screen name="Details" component={DetailScreen} />
             <Stack.Screen name="EditDetails" component={EditDetailsScreen} />
+            <Stack.Screen name="ReceiptHistory" component={ReceiptHistory} />
           </>
         ) : (
           <>

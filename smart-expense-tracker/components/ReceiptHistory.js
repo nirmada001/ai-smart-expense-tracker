@@ -136,6 +136,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginBottom: 12,
     textAlign: 'center',
+    marginTop: 70,
   },
   card: {
     backgroundColor: '#fff',
