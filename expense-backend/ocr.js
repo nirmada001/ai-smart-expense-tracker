@@ -1,22 +1,20 @@
-const sharp = require('sharp');
-const Tesseract = require('tesseract.js');
+const vision = require('@google-cloud/vision');
+const path = require('path');
+
+// Initialize Google Cloud Vision client
+const client = new vision.ImageAnnotatorClient({
+  keyFilename: path.join(__dirname, 'google-vision-key.json'), 
+});
 
 async function extractTextFromImage(imageBuffer) {
   try {
-    console.log("Original image buffer size:", imageBuffer.length);
-
-    // Convert to PNG to avoid issues with certain JPEGs
-    const pngBuffer = await sharp(imageBuffer).png().toBuffer();
-
-    console.log("Converted PNG buffer size:", pngBuffer.length);
-
-    const { data: { text } } = await Tesseract.recognize(pngBuffer, 'eng');
-
-    console.log("Extracted Text:", text);
-
-    return text.trim();
+    const [result] = await client.textDetection({ image: { content: imageBuffer } });
+    const detections = result.textAnnotations;
+    const fullText = detections.length ? detections[0].description : '';
+    console.log("Extracted Text:", fullText);
+    return fullText.trim();
   } catch (error) {
-    console.error("OCR failed:", error.message);
+    console.error('Vision API Error:', error.message);
     return 'OCR_FAILED';
   }
 }

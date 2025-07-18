@@ -17,7 +17,7 @@ ${receiptText}
 Extract:
 - "Shop Name" - Shop name or merchant
 - "Date" - Date of purchase
-- "Total Amount" - Prefer 'Net Total', 'Grand Total', 'Gross Total', or final amount paid. If multiple totals exist, pick the final amount.
+- "Total Amount" - Prefer 'Net Total', 'Grand Total', 'Gross Total','Gross AMT' or final amount paid. If multiple totals exist, pick the final amount.
 - "Items" - List of items purchased (if visible)
 - "Suggested Title" - A short, human-friendly expense title (e.g., 'Pharmacy - THE NEW PHARMACY')
 - "Likely Categories" - 2–3 appropriate expense categories (e.g., 'Healthcare', 'Medicines')
